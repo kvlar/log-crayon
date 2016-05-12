@@ -62,7 +62,7 @@ func init() {
 		config_dir = current_user.HomeDir
 	}
 
-	config_file := path.Join(config_dir, ".config.yml")
+	config_file := path.Join(config_dir, ".log_crayon.yml")
 
 	flag.StringVar(&CONFIG_FILE, "c", config_file, "config file location")
 }
