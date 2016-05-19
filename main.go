@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/mgutz/ansi"
 	"gopkg.in/yaml.v2"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -14,6 +15,7 @@ import (
 )
 
 var CONFIG_FILE string
+var INPUT_FILE string
 
 type config struct {
 	Crayons []struct {
@@ -65,12 +67,29 @@ func init() {
 	config_file := path.Join(config_dir, ".log_crayon.yml")
 
 	flag.StringVar(&CONFIG_FILE, "c", config_file, "config file location")
+	flag.StringVar(&INPUT_FILE, "i", "", "input file (defaults to stdin)")
+}
+
+func getIn() (io.ReadCloser, error) {
+	if INPUT_FILE == "" {
+		return ioutil.NopCloser(os.Stdin), nil
+	} else if file, err := os.Open(INPUT_FILE); err != nil {
+		return nil, err
+	} else {
+		return file, nil
+	}
 }
 
 func main() {
 	flag.Parse()
-	rdr := os.Stdin
-	scanner := bufio.NewScanner(rdr)
+	rdr, err := getIn()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	scanner := bufio.NewScanner(bufio.NewReader(rdr))
+	defer rdr.Close()
 
 	if rules, err := readRules(CONFIG_FILE); err != nil {
 		fmt.Println("Error while reading rules:", err)
