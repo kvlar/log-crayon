@@ -82,26 +82,29 @@ func getIn() (io.ReadCloser, error) {
 
 func main() {
 	flag.Parse()
-	rdr, err := getIn()
+	rawReader, err := getIn()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	scanner := bufio.NewScanner(bufio.NewReader(rdr))
-	defer rdr.Close()
+	defer rawReader.Close()
 
 	if rules, err := readRules(CONFIG_FILE); err != nil {
 		fmt.Println("Error while reading rules:", err)
 		fmt.Println("Aborting.")
 	} else {
+		rdr := bufio.NewReader(rawReader)
 
-		for scanner.Scan() {
-			line := scanner.Text()
+		read := func() (string, error) {
+			return rdr.ReadString('\n')
+		}
+		for line, err := read(); err != io.EOF; line, err = read() {
 			for _, rule := range rules {
 				line = rule.Transform(line)
 			}
-			fmt.Println(line)
+			fmt.Print(line)
+
 		}
 	}
 
