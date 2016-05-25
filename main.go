@@ -12,6 +12,8 @@ import (
 	"os/user"
 	"path"
 	"regexp"
+	"strings"
+	"unicode"
 )
 
 var CONFIG_FILE string
@@ -101,9 +103,9 @@ func main() {
 		}
 		for line, err := read(); err != io.EOF; line, err = read() {
 			for _, rule := range rules {
-				line = rule.Transform(line)
+				line = rule.Transform(strings.TrimRightFunc(line, unicode.IsSpace))
 			}
-			fmt.Print(line)
+			fmt.Println(line)
 
 		}
 	}
